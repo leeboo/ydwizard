@@ -364,9 +364,9 @@ function initSetting() {
   settingDialog.innerHTML = `<strong id="ydw-setting-header" class="ydw-ignore">YDWizard</strong>
       <p class="ydw-ignore">${translate('settingDesc')}</p>
       <div class="ydw-ignore" style="display: flex;gap: 20px;align-items: center">
-        <button type="button" class="ydw-ignore" id="ydw-export">${translate('export')}</button>
-        <button type="button" class="ydw-ignore" id="ydw-import">${translate('import')}</button>
-        <button type="button" class="ydw-ignore" id="ydw-preview">${translate('preview')}</button>
+        <button type="button" class="ydw-ignore" id="ydw-export"> ${translate('export')} </button>
+        <button type="button" class="ydw-ignore" id="ydw-import"> ${translate('import')} </button>
+        <button type="button" class="ydw-ignore" id="ydw-preview"> ${translate('preview')} </button>
         <a id="ydw-export-link"></a>
       </div>
       <input type="file" id="ydw-import-file" accept="application/json" style="display: none">
@@ -465,10 +465,12 @@ function showWizard() {
 <button type="button" id="ydw-next-btn">⇨</button>
 </div>`
   const hoverEl = document.querySelector(wizard.selector)
-  showBoundingClientRect(hoverEl)
-  const rect = hoverEl.getBoundingClientRect()
-  document.documentElement.scrollTop = rect.top
-  document.documentElement.scrollLeft = rect.left
+  if (hoverEl) {
+    showBoundingClientRect(hoverEl)
+    const rect = hoverEl.getBoundingClientRect()
+    document.documentElement.scrollTop = rect.top
+    document.documentElement.scrollLeft = rect.left
+  }
   document.body.append(wizardDialog)
 
   document.querySelectorAll('*').forEach(item => {
@@ -477,20 +479,36 @@ function showWizard() {
   document.addEventListener('scroll', elementScroll)
 
   const arrow = document.querySelector('#ydw-wizard [data-popper-arrow]') as HTMLElement
-  createPopper(hoverEl, wizardDialog, {
-    placement: 'bottom-start',
+  const arrowOption = hoverEl ? {
+      name: 'arrow',
+      options: {
+        element: arrow,
+        padding: 20
+      }
+    } : {}
+  createPopper(hoverEl || document.body, wizardDialog, {
+    placement: hoverEl ? 'bottom-start' : 'top-start',
     modifiers: [
       {
         name: 'arrow',
         options: {
           element: arrow,
-          padding: 20
+          padding: () => {
+            if (hoverEl) return 20
+            return 40
+          }
         }
       },
       {
         name: 'offset',
         options: {
-          offset: [0, 20]
+          offset: () => {
+            if (hoverEl) return [0, 20]
+            return [
+              0,
+              -document.body.clientHeight
+            ];
+          }
         }
       }
     ]
